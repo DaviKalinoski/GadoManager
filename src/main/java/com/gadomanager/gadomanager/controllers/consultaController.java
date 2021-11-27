@@ -12,10 +12,12 @@ import org.springframework.stereotype.Component;
 
 import com.gadomanager.gadomanager.classes.Alimentos;
 import com.gadomanager.gadomanager.classes.Bovinos;
+import com.gadomanager.gadomanager.classes.Racoes;
 import com.gadomanager.gadomanager.classes.Usuarios;
 import com.gadomanager.gadomanager.classes.Veterinario;
 import com.gadomanager.gadomanager.controllers.filtros.confirmExcluirController;
 import com.gadomanager.gadomanager.controllers.filtros.filtroBovinoController;
+import com.gadomanager.gadomanager.controllers.filtros.filtroRacoesController;
 import com.gadomanager.gadomanager.controllers.filtros.filtroUsuarioController;
 import com.gadomanager.gadomanager.controllers.filtros.filtroVeterinarioController;
 import com.gadomanager.gadomanager.repos.AlimentoRepository;
@@ -367,6 +369,45 @@ public class consultaController {
 		consultarAlimentos();
 	}
 
+	private void consultarRacoes() {
+
+		tableConsulta.getColumns().clear();
+		tableConsulta.getItems().clear();
+		tableConsulta.setItems(getPerspectiveList());
+
+		// Colunas
+		TableColumn<Object, String> obsCol = new TableColumn<>("Observacao");
+		obsCol.setCellValueFactory(new PropertyValueFactory<>("Observacao"));
+		tableConsulta.getColumns().add(obsCol);
+
+		TableColumn<Object, String> descCol = new TableColumn<>("descricao");
+		descCol.setCellValueFactory(new PropertyValueFactory<>("descricao"));
+		tableConsulta.getColumns().add(descCol);
+
+	}
+
+	private ObservableList<Object> getRacoes() {
+		ObservableList<Object> list = FXCollections.observableArrayList();
+
+		DAOHibernate<Racoes> daoRacao = new DAOHibernate<>(Racoes.class);
+		List<Racoes> query = daoRacao.getAll();
+		list.addAll(query);
+
+		return list;
+	}
+
+	@FXML
+	public void racoesClick() {
+		setCurrentPerspective("Racoes");
+		menuConsulta.setText(currentPerspective);
+
+		btnEditar.setDisable(true);
+		btnExcluir.setDisable(true);
+		
+		setPerspectiveList(getRacoes());
+		consultarRacoes();
+	}
+	
 	@FXML
 	public void filtrar() throws Exception {
 
@@ -428,6 +469,23 @@ public class consultaController {
 				consultarVeterinarios();
 			} else {
 				consultarVeterinarios();
+			}
+		}
+		if (perspectiva == "Racoes") {
+			fxmlFiltro = getClass().getResource("/fxml/FiltroDeRacoes.fxml");
+			loader.setLocation(fxmlFiltro);
+			Parent filtroP = loader.load();
+			Scene filtroScene = new Scene(filtroP);
+			filtroRacoesController filtroRacoesController = loader.getController();
+			filtroRacoesController.setConsultaController(this);
+			filtroStage.initModality(Modality.APPLICATION_MODAL);
+			filtroStage.setScene(filtroScene);
+			filtroStage.showAndWait();
+			if (getPerspectiveList().isEmpty()) {
+				setPerspectiveList(getRacoes());
+				consultarRacoes();
+			} else {
+				consultarRacoes();
 			}
 		}
 	}
@@ -494,6 +552,22 @@ public class consultaController {
 			editStage.showAndWait();
 			setPerspectiveList(getVeterinarios());
 			consultarVeterinarios();
+
+		} else if (perspectiva == "Racoes") {
+			Racoes rac = (Racoes) tableConsulta.getItems().get(index);
+
+			fxmledit = getClass().getResource("/fxml/CadastroDeRacoes.fxml");
+			loader.setLocation(fxmledit);
+			Parent edtitP = loader.load();
+			Scene editScene = new Scene(edtitP);
+			cadastroRacaoController cadastroRacoesController = loader.getController();
+			cadastroRacoesController.populateFields(rac);
+			cadastroRacoesController.setEdit(true);
+			editStage.initModality(Modality.APPLICATION_MODAL);
+			editStage.setScene(editScene);
+			editStage.showAndWait();
+			setPerspectiveList(getRacoes());
+			consultarRacoes();
 
 		}
 	}
@@ -568,6 +642,20 @@ public class consultaController {
 				repoAlimento.deleteById(alimento.getIdAlimento());
 				setPerspectiveList(getAlimentos());
 				consultarAlimentos();
+			}
+		} 
+		if (perspectiva == "Racoes") {
+			Racoes racao = (Racoes) tableConsulta.getItems().get(index);
+			DAOHibernate<Racoes> daoB = new DAOHibernate<>(Racoes.class);
+			Racoes racaoDel = daoB.getAllById(racao.getIdRacao());
+
+			confirmExcluirController.setClass(racaoDel);
+			dialogStage.showAndWait();
+			Boolean excluir = confirmExcluirController.returnDelete();
+			if (excluir) {
+				daoB.beginTransaction().delete(racaoDel).commitTransaction().closeAll();
+				setPerspectiveList(getRacoes());
+				consultarRacoes();
 			}
 		}
 	}

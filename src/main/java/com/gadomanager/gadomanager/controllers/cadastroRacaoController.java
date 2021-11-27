@@ -3,6 +3,7 @@ package com.gadomanager.gadomanager.controllers;
 import org.controlsfx.control.Notifications;
 
 import com.gadomanager.gadomanager.classes.Racoes;
+import com.gadomanager.gadomanager.classes.Veterinario;
 import com.gadomanager.gadomanager.utils.DAOHibernate;
 
 import javafx.fxml.FXML;
@@ -25,8 +26,45 @@ public class cadastroRacaoController {
 	@FXML
 	private Button btnCancelar;
 	
+	private Boolean editMode;
+
+	private Racoes racao;
+
+	public Racoes getRacoes() {
+		return racao;
+	}
+	
+	public void setRacao(Racoes racao) {
+		this.racao = racao;
+	}
+	
+	public void setEdit(boolean EditMode) {
+		if (EditMode) {
+			this.editMode = true;
+
+		} else {
+			this.editMode = false;
+		}
+	}
+	
 	@FXML
 	public void salvar() {
+		
+		if (editMode) {
+
+			DAOHibernate<Racoes> daoRac = new DAOHibernate<Racoes>(Racoes.class);
+
+			Racoes racEdit = daoRac.getAllById(racao.getIdRacao());
+
+			String observacao = txtAObservacao.getText();
+			racEdit.setObservacao(observacao);
+
+			String descricao = txtDescricao.getText();
+			racEdit.setDescricao(descricao);
+
+			daoRac.beginTransaction().update(racEdit).commitTransaction().closeAll();
+		} else {
+
 		
 		String observacao = txtAObservacao.getText();
 		
@@ -39,6 +77,14 @@ public class cadastroRacaoController {
 		daoR.beginTransaction().save(racao).commitTransaction().closeAll();
 		
 		Notifications.create().title("Alerta").text("Nova Ração adicionada com sucesso!").showConfirm();
+		}
+	}
+	public void populateFields(Racoes rac) {
+
+		setRacao(rac);
+
+		txtAObservacao.setText(rac.getObservacao());
+		txtDescricao.setText(rac.getDescricao());
 	}
 	
 	@FXML

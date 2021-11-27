@@ -33,6 +33,7 @@
           <MenuItem fx:id="menuConsultaUsuarios" mnemonicParsing="false" onAction="#usuarioClick" text="Usuarios" />
             <MenuItem fx:id="menuConsultaVeterinarios" mnemonicParsing="false" onAction="#veterinariosClick" text="Veterinários" />
             <MenuItem fx:id="menuConsultaBovino1" mnemonicParsing="false" onAction="#alimentosClick" text="Alimentos" />
+            <MenuItem fx:id="menuConsultaRacoes" mnemonicParsing="false" onAction="#racoesClick" text="Racoes" />       		
         </items>
          <GridPane.margin>
             <Insets left="3.0" />
